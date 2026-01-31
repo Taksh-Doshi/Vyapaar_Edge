@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vyapar Edge — Welcome</title>
+
+  
+  <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+  <div id="loading-screen">Initializing Vyapar Edge…</div>
+  <div id="message-box" role="alert"></div>
+
+  <div class="landing-wrapper">
+    <section id="landing-container" class="hero-section" style="display:none;">
+      <div id="particles-js"></div>
+
+      <div class="landing-content">
+        <h1 class="app-title">Vyapar Edge</h1>
+        <p class="tagline-one">The Power to Control Your Commerce.</p>
+        <p class="tagline-two">Digitize stock, eliminate chaos, and maximize profit—all in real-time.</p>
+
+        <div style="margin-top:1.25rem;">
+          <button id="get-started-btn" class="btn btn-cta">Get Started</button>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="features-section">
+      <h2 style="text-align:center;margin:0 0 1rem 0;font-size:1.25rem;color:#111827;">Core Features & Operations</h2>
+      <p style="text-align:center;color:#6b7280;margin:0 0 1.25rem 0;">Stop tracking manually. Start logging every transaction.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>Digital Receipts</h3>
+          <p>Instantly log incoming goods and automatically update stock counts upon validation.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Quick Deliveries</h3>
+          <p>Track outgoing shipments and reduce inventory automatically when orders are delivered.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Internal Transfers</h3>
+          <p>Move stock between racks, floors or warehouses — every move logged in the ledger.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Live Stock & Alerts</h3>
+          <p>View real-time stock levels and receive low-stock alerts before you run out.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button id="close-modal-btn" class="close-btn">&times;</button>
+      <h3 style="text-align:left;margin:0 0 0.75rem 0;color:#111827;">Log In to Vyapar Edge</h3>
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active">Log In</button>
+        <button id="tab-signup" class="auth-tab">Sign Up</button>
+      </div>
+      <div id="form-login" class="auth-step active">
+        <form id="login-form">
+          <label class="form-label">Email</label>
+          <input id="login-email" class="form-input" type="email" required />
+          <label class="form-label">Password</label>
+          <input id="login-password" class="form-input" type="password" required />
+          <button type="submit" class="btn btn-cta" style="width:100%;">Log In</button>
+          <a id="forgot-password-link" class="link-switch" href="#">Forgot password?</a>
+        </form>
+      </div>
+      <div id="form-signup" class="auth-step">
+        <form id="signup-form">
+          <label class="form-label">Email</label>
+          <input id="signup-email" class="form-input" type="email" required />
+          <label class="form-label">Create password (min 6 chars)</label>
+          <input id="signup-password" class="form-input" type="password" required minlength="6" />
+          <button type="submit" class="btn btn-cta" style="width:100%;">Create Account</button>
+        </form>
+      </div>
+      <div id="form-reset" class="auth-step">
+        <form id="reset-form">
+          <label class="form-label">Email for reset</label>
+          <input id="reset-email" class="form-input" type="email" required />
+          <button type="submit" class="btn btn-cta" style="width:100%;">Send Reset Link</button>
+          <a id="back-to-login" class="link-switch" href="#">Back to Login</a>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+
+  
+  <script type="module" src="js/index.js"></script>
+</body>
+</html>

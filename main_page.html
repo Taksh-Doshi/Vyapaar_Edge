@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vyapar Edge - Inventory Management System</title>
+    
+    <!-- No external CSS frameworks (Vanilla CSS only) -->
+    
+
+    
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <!-- VISIBLE LOADING SCREEN WHILE FIREBASE INITS -->
+    <div id="loading-overlay" style="position: fixed; inset: 0; background-color: #ffffff; display: flex; align-items: center; justify-content: center; z-index: 100;">
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--color-secondary);">Loading Vyapar Edge...</div>
+    </div>
+
+    <!-- NOTIFICATION CENTER -->
+    <div id="notification-center"></div>
+
+    <!-- MAIN APPLICATION CONTAINER (hidden until authenticated) -->
+    <div id="app-content" class="app-container" style="display: none;">
+        
+        <!-- SIDEBAR / MODERN MENU -->
+        <div id="sidebar">
+            <div class="sidebar-logo">
+                VYAPAR EDGE IMS
+            </div>
+            
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <button id="btn-dashboard" onclick="switchView('dashboard')" title="Dashboard">
+                        <!-- Icon: Dashboard/Grid View -->
+                        <svg viewBox="0 0 24 24"><path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"></path></svg>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button id="btn-products" onclick="switchView('products')" title="Product Management">
+                        <!-- Icon: Product/Inventory Box -->
+                        <svg viewBox="0 0 24 24"><path d="M11 2h2v20h-2V2zM4 6h16v12H4V6zm2 2v8h12V8H6zM4 4h16v2H4V4zm0 14h16v2H4v-2z"></path></svg>
+                        <span>Product Management</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button id="btn-receipts" onclick="switchView('receipts')" title="Incoming Receipts">
+                        <!-- Icon: Receipt/Box with Plus -->
+                        <svg viewBox="0 0 24 24"><path d="M19 11v-3c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v3H6v8h12v-8h-3zm-5 0V8h-2v3h2zm-5 5H7v-2h2v2zm6 0h-2v-2h2v2zM19 14h-2v-2h2v2z"></path><path d="M17 14h2v2h-2zM15 11v3h2v-3h-2zM7 11v3h2v-3H7zM3 3h2v2H3V3zM3 7h2v2H3V7zM3 11h2v2H3v-2z"></path></svg>
+                        <span>Incoming Receipts</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button id="btn-deliveries" onclick="switchView('deliveries')" title="Delivery Orders">
+                        <!-- Icon: Delivery/Truck -->
+                        <svg viewBox="0 0 24 24"><path d="M22 15c0 .5-.4 1-1 1h-1v5h-2v-5H6v5H4v-5H3c-.6 0-1-.5-1-1v-4c0-.5.4-1 1-1h1v-2c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2h1c.6 0 1 .5 1 1v4zm-7-2h-6v-2h6v2zM6 8h10v2H6V8z"></path></svg>
+                        <span>Delivery Orders</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button id="btn-transfers" onclick="switchView('transfers')" title="Internal Transfers">
+                        <!-- Icon: Transfers/Double Arrow -->
+                        <svg viewBox="0 0 24 24"><path d="M18 9l4-4-4-4V6h-7v2h7v3zM6 15l-4 4 4 4v-3h7v-2H6v-3z"></path></svg>
+                        <span>Internal Transfers</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button id="btn-adjustments" onclick="switchView('adjustments')" title="Stock Adjustments">
+                        <!-- Icon: Adjustments/Clipboard Check -->
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v4h4v12zm-3-4l-4 4-2-2 1.4-1.4L13 16l3.6-3.6L18 14.4l-5 5z"></path></svg>
+                        <span>Stock Adjustments</span>
+                    </button>
+                </li>
+                
+                <li class="nav-list-separator"></li>
+                
+                <li class="nav-item">
+                    <button id="btn-ledger" onclick="switchView('ledger')" title="Transaction Ledger">
+                        <!-- Icon: Ledger/Book Audit -->
+                        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 18V6h16v12H4zm4-2h8v-2H8v2zm0-4h8V8H8v4z"></path></svg>
+                        <span>Transaction Ledger</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <div id="main-content-area">
+
+            <!-- Header & Status -->
+            <div class="main-header">
+                <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--color-dark);">Application Control Panel</h1>
+                <div class="status-info">
+                    <p id="user-id-display" style="font-family: monospace; background: #f3f4f6; padding: 2px 5px; border-radius: 4px; margin-bottom: 5px;"></p>
+                    <button onclick="handleLogout()" class="logout-btn" style="margin: 0; display: inline-block; width: auto;">Logout</button>
+                </div>
+            </div>
+
+            <!-- --- DASHBOARD VIEW --- -->
+            <div id="dashboard" class="app-view">
+                
+                <div id="low-stock-alert-bar" style="display: none;">
+                    <!-- Critical Alert Bar is displayed here if lowStockProducts.length > 0 -->
+                </div>
+                
+                <div class="dashboard-welcome">
+                    <div>
+                        <h2>Welcome to Vyapar Edge IMS!</h2>
+                        <p>Your centralized control panel for real-time inventory and logistics data.</p>
+                    </div>
+                    <button onclick="switchView('products')" class="btn-submit btn-primary" style="padding: 12px 25px; font-size: 1rem;">
+                        View All Inventory
+                    </button>
+                </div>
+
+                <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--color-dark); margin-bottom: 20px;">Key Stock Metrics (Last 7 Days Activity)</h3>
+
+                <div class="metric-grid">
+                    
+                    <!-- Metric 1: Total Products -->
+                    <div class="metric-item">
+                        <div class="metric-circle" id="metric-total-products">0</div>
+                        <div class="metric-label">Total SKUs Tracked</div>
+                    </div>
+                    
+                    <!-- Metric 2: Low Stock Alert -->
+                    <div class="metric-item low-stock">
+                        <div class="metric-circle" id="metric-low-stock" style="color: var(--color-danger); border-color: #fca5a5;">0</div>
+                        <div class="metric-label">Low or Out of Stock</div>
+                    </div>
+
+                    <!-- Metric 3: Pending Receipts -->
+                    <div class="metric-item">
+                        <div class="metric-circle" id="metric-pending-receipts">0</div>
+                        <div class="metric-label">Recent Receipts (Last 7D)</div>
+                    </div>
+
+                    <!-- Metric 4: Pending Deliveries -->
+                    <div class="metric-item">
+                        <div class="metric-circle" id="metric-pending-deliveries">0</div>
+                        <div class="metric-label">Recent Deliveries (Last 7D)</div>
+                    </div>
+                    
+                    <!-- Metric 5: Internal Transfers -->
+                    <div class="metric-item">
+                        <div class="metric-circle" id="metric-internal-transfer">0</div>
+                        <div class="metric-label">Internal Transfers (Last 7D)</div>
+                    </div>
+                </div>
+
+                <!-- Recent Ledger Activity Placeholder -->
+                <div class="card">
+                    <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--color-dark); margin-bottom: 15px;">Recent Transaction Activity</h3>
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <!-- Embed the Ledger table here or show a summary -->
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">Time</th>
+                                    <th style="width: 15%;">Type</th>
+                                    <th style="width: 25%;">Product</th>
+                                    <th style="width: 20%;">Location</th>
+                                    <th style="width: 10%; text-align: right;">Change</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledger-body-dashboard">
+                                <!-- Duplicated Ledger body for dashboard view, populated by renderLedger -->
+                            </tbody>
+                        </table>
+                        <p style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: #6b7280;">See full details in the Transaction Ledger view.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- --- 1. PRODUCT MANAGEMENT VIEW --- -->
+            <div id="products" class="app-view" style="display: none;">
+                <div class="product-header">
+                    <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--color-dark);">Product & Inventory Management</h2>
+                    <div class="search-container">
+                        <input type="text" id="product-search-input" placeholder="Search by SKU or Name..." oninput="handleSearchInput(event)">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+                    <!-- Create Product Form -->
+                    <div class="card" style="height: fit-content;">
+                        <h3 style="font-size: 1.1rem; font-weight: 600; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; margin-bottom: 15px;">Create New SKU</h3>
+                        <form id="create-product-form" onsubmit="event.preventDefault(); handleCreateProduct();">
+                            <div class="form-grid product-grid">
+                                <div class="form-group">
+                                    <label for="new-product-name">Name</label>
+                                    <input type="text" id="new-product-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-product-sku">SKU / Code</label>
+                                    <input type="text" id="new-product-sku" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-product-category">Category</label>
+                                    <input type="text" id="new-product-category" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-product-uom">Unit of Measure</label>
+                                    <input type="text" id="new-product-uom" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-product-stock">Initial Stock (Optional)</label>
+                                    <input type="number" id="new-product-stock" value="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-product-location">Initial Location</label>
+                                    <select id="new-product-location" required>
+                                        <!-- Options populated by JS -->
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-submit btn-primary" style="width: 100%; margin-top: 15px;">
+                                Save Product
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Products List -->
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; font-weight: 600; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; margin-bottom: 15px;">Current Inventory</h3>
+                        <div class="data-table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 20%;">Name</th>
+                                        <th style="width: 15%;">SKU</th>
+                                        <th style="width: 15%;">Category</th>
+                                        <th style="width: 10%;">UoM</th>
+                                        <th style="width: 10%;">Total Stock</th>
+                                        <th style="width: 30%;">Stock Breakdown (Location)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="products-list-body">
+                                    <!-- Products will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- --- 2. RECEIPTS VIEW --- -->
+            <div id="receipts" class="app-view" style="display: none;">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <h2 style="font-size: 1.5rem; font-weight: 600; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; margin-bottom: 15px;">New Goods Receipt</h2>
+                    <form id="receipt-form" onsubmit="event.preventDefault(); handleReceiptValidation();">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="receipt-product-id">Product</label>
+                                <select id="receipt-product-id" required>
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="receipt-supplier">Supplier/Vendor Name</label>
+                                <input type="text" id="receipt-supplier" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="receipt-location">Destination Location</label>
+                                <select id="receipt-location" required>
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="receipt-quantity">Quantity Received</label>
+                                <input type="number" id="receipt-quantity" required min="1">
+                            </div>
+                            <button type="submit" class="btn-submit btn-success" style="width: 100%;">
+                                Validate Receipt (+ Stock)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- --- 3. DELIVERY ORDERS VIEW --- -->
+            <div id="deliveries" class="app-view" style="display: none;">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <h2 style="font-size: 1.5rem; font-weight: 600; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; margin-bottom: 15px;">New Delivery Order</h2>
+                    <form id="delivery-form" onsubmit="event.preventDefault(); handleDeliveryValidation();">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="delivery-product-id">Product to Deliver</label>
+                                <select id="delivery-product-id" required>
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="delivery-customer-order">Customer Order Ref</label>
+                                <input type="text" id="delivery-customer-order" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="delivery-location">Source Location (Pick From)</label>
+                                <select id="delivery-location" required>
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="delivery-quantity">Quantity to Ship</label>
+                                <input type="number" id="delivery-quantity" required min="1">
+                            </div>
+                            <button type="submit" class="btn-submit btn-danger" style="width: 100%;">
+                                Validate Delivery (- Stock)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- --- 4. INTERNAL TRANSFERS VIEW --- -->
+            <div id="transfers" class="app-view" style="display: none;">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <h2 style="font-size: 1.5rem; font-weight: 600; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; margin-bottom: 15px;">Internal Stock Transfer</h2>
+                    <form id="transfer-form" onsubmit="event.preventDefault(); handleTransferValidation();">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="transfer-product-id">Product to Transfer</label>
+                                <select id="transfer-product-id" required>
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transfer-from-location">From Location (Source)</label>
+                                <select id="transfer-from-location" required>
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transfer-to-location">To Location (Destination)</label>
+                                <select id="transfer-to-location" required>
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transfer-quantity">Quantity to Transfer</label>
+                                <input type="number" id="transfer-quantity" required min="1">
+                            </div>
+                            <button type="submit" class="btn-submit btn-warning" style="width: 100%;">
+                                Log Transfer (Stock Location Change)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- --- 5. STOCK ADJUSTMENTS VIEW --- -->
+            <div id="adjustments" class="app-view" style="display: none;">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <h2 style="font-size: 1.5rem; font-weight: 600; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; margin-bottom: 15px;">Stock Adjustment</h2>
+                    <form id="adjustment-form" onsubmit="event.preventDefault(); handleAdjustmentValidation();">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="adjustment-product-id">Product</label>
+                                <select id="adjustment-product-id" required>
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="adjustment-location">Location to Adjust</label>
+                                <select id="adjustment-location" required>
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="adjustment-counted-quantity">Physical Counted Quantity (NEW VALUE)</label>
+                                <input type="number" id="adjustment-counted-quantity" required min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="adjustment-reason">Adjustment Reason</label>
+                                <input type="text" id="adjustment-reason" required>
+                            </div>
+                            <button type="submit" class="btn-submit btn-success" style="width: 100%;">
+                                Apply Adjustment (Set New Stock)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- --- 6. GENERAL LEDGER VIEW --- -->
+            <div id="ledger" class="app-view" style="display: none;">
+                <div class="card" style="padding: 0;">
+                    <h2 style="font-size: 1.5rem; font-weight: 600; border-bottom: 1px solid var(--color-border); padding: 15px; margin: 0;">Inventory Transaction Ledger (Audit Trail)</h2>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">Time</th>
+                                    <th style="width: 10%;">Doc Type</th>
+                                    <th style="width: 20%;">Product</th>
+                                    <th style="width: 15%;">Location</th>
+                                    <th style="width: 10%; text-align: right;">Change</th>
+                                    <th style="width: 10%; text-align: right;">Old Qty (Loc)</th>
+                                    <th style="width: 10%; text-align: right;">New Global</th>
+                                    <th style="width: 10%;">Notes</th>
+                                    <th style="width: 10%;">User</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledger-body">
+                                <!-- Ledger entries will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
